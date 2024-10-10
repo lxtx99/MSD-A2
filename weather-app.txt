@@ -12,3 +12,25 @@ def index():
 
 @app.route('/weather', methods=['POST'])
 def weather():
+    city = request.form.get('city')
+    response = requests.get(WEATHER_URL, params={
+        'q': city,
+        'appid': API_KEY,
+        'units': 'metric'  # 使用摄氏度
+    })
+    data = response.json()
+
+    if response.status_code == 200:
+        weather_data = {
+            'temperature': data['main']['temp'],
+            'humidity': data['main']['humidity'],
+            'wind_speed': data['wind']['speed'],
+            'description': data['weather'][0]['description']
+        }
+        return render_template('weather.html', weather=weather_data, city=city)
+    else:
+        error_message = data.get('message', 'Error fetching weather data')
+        return render_template('weather.html', error=error_message)
+
+if __name__ == '__main__':
+    app.run(debug=True)
